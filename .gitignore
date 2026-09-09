@@ -12,7 +12,7 @@ backend/venv/
 backend/.env
 
 # Database
-backend/*.db
+backend/instance/
 
 # Uploaded files
 backend/uploads/*
