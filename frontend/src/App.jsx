@@ -1,5 +1,6 @@
 import BrandForm from "./BrandForm";
 import BrandList from "./BrandList";
+import GeneratePanel from "./GeneratePanel";
 import { useState, useEffect } from 'react'
 import './App.css'
 
@@ -37,6 +38,7 @@ function App() {
       <p>Backend status: <strong>{backendStatus}</strong></p>
 
       <BrandForm onCreated={loadBrands} />
+      <GeneratePanel brands={brands} />
       <BrandList brands={brands} />
     </div>
   )
