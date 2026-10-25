@@ -45,3 +45,36 @@ def get_brand(brand_id):
         return jsonify({"error": "Brand not found"}), 404
 
     return jsonify(brand.to_dict())
+
+
+@brands_bp.route("/api/brands/<int:brand_id>", methods=["PUT"])
+def update_brand(brand_id):
+    brand = db.session.get(Brand, brand_id)
+    if not brand:
+        return jsonify({"error": "Brand not found"}), 404
+
+    data = request.get_json(silent=True)
+    if not data or not (data.get("name") or "").strip():
+        return jsonify({"error": "Brand name is required"}), 400
+
+    # PUT replaces the whole record with what the client sent
+    brand.name = data.get("name").strip()
+    brand.industry = data.get("industry")
+    brand.description = data.get("description")
+    brand.target_audience = data.get("target_audience")
+    brand.brand_voice = data.get("brand_voice")
+    brand.products = data.get("products")
+
+    db.session.commit()
+    return jsonify(brand.to_dict())
+
+
+@brands_bp.route("/api/brands/<int:brand_id>", methods=["DELETE"])
+def delete_brand(brand_id):
+    brand = db.session.get(Brand, brand_id)
+    if not brand:
+        return jsonify({"error": "Brand not found"}), 404
+
+    db.session.delete(brand)
+    db.session.commit()
+    return jsonify({"message": "Brand deleted"})

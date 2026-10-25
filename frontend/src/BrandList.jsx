@@ -1,4 +1,4 @@
-function BrandList({ brands }) {
+function BrandList({ brands, onEdit, onDelete }) {
   if (brands.length === 0) {
     return <p>No brands yet. Create your first one above.</p>;
   }
@@ -27,6 +27,11 @@ function BrandList({ brands }) {
             <p><strong>Voice:</strong> {brand.brand_voice}</p>
           )}
           {brand.products && <p><strong>Products:</strong> {brand.products}</p>}
+
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+            <button type="button" onClick={() => onEdit(brand)}>Edit</button>
+            <button type="button" onClick={() => onDelete(brand)}>Delete</button>
+          </div>
         </div>
       ))}
     </div>

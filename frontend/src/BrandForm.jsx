@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const API_URL = "http://localhost:5000/api/brands";
 
@@ -11,10 +11,29 @@ const emptyForm = {
   products: "",
 };
 
-function BrandForm({ onCreated }) {
+function BrandForm({ onSaved, editingBrand, onCancelEdit }) {
   const [formData, setFormData] = useState(emptyForm);
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [message, setMessage] = useState("");
+
+  const isEditing = Boolean(editingBrand);
+
+  // When the user clicks Edit on a brand, copy its values into the form.
+  // When editing ends, go back to an empty form.
+  useEffect(() => {
+    if (editingBrand) {
+      setFormData({
+        name: editingBrand.name || "",
+        industry: editingBrand.industry || "",
+        description: editingBrand.description || "",
+        target_audience: editingBrand.target_audience || "",
+        brand_voice: editingBrand.brand_voice || "",
+        products: editingBrand.products || "",
+      });
+    } else {
+      setFormData(emptyForm);
+    }
+  }, [editingBrand]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,9 +45,12 @@ function BrandForm({ onCreated }) {
     setStatus("loading");
     setMessage("");
 
+    const url = isEditing ? `${API_URL}/${editingBrand.id}` : API_URL;
+    const method = isEditing ? "PUT" : "POST";
+
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
@@ -40,10 +62,12 @@ function BrandForm({ onCreated }) {
       }
 
       setStatus("success");
-      setMessage(`Brand "${formData.name}" created!`);
+      setMessage(
+        `Brand "${formData.name}" ${isEditing ? "updated" : "created"}!`
+      );
       setFormData(emptyForm);
-            setFormData(emptyForm);
-      if (onCreated) onCreated();
+      if (isEditing && onCancelEdit) onCancelEdit();
+      if (onSaved) onSaved();
     } catch (err) {
       setStatus("error");
       setMessage(err.message);
@@ -51,8 +75,11 @@ function BrandForm({ onCreated }) {
   };
 
   return (
-<form onSubmit={handleSubmit} style={{ textAlign: "left", maxWidth: "480px" }}>
-      <h2>Set up your brand</h2>
+    <form
+      onSubmit={handleSubmit}
+      style={{ textAlign: "left", maxWidth: "480px" }}
+    >
+      <h2>{isEditing ? `Edit ${editingBrand.name}` : "Set up your brand"}</h2>
 
       <label>
         Brand name *
@@ -117,8 +144,22 @@ function BrandForm({ onCreated }) {
       </label>
 
       <button type="submit" disabled={status === "loading"}>
-        {status === "loading" ? "Saving..." : "Create brand"}
+        {status === "loading"
+          ? "Saving..."
+          : isEditing
+          ? "Save changes"
+          : "Create brand"}
       </button>
+
+      {isEditing && (
+        <button
+          type="button"
+          onClick={onCancelEdit}
+          style={{ marginLeft: "0.5rem" }}
+        >
+          Cancel
+        </button>
+      )}
 
       {message && <p className={status}>{message}</p>}
     </form>

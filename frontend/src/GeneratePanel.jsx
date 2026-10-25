@@ -12,7 +12,9 @@ function GeneratePanel({ brands }) {
   }
 
   // If the user hasn't picked a brand, default to the first one
-  const selectedId = brandId || brands[0].id;
+    const selectedId = brands.some((b) => String(b.id) === String(brandId))
+    ? brandId
+    : brands[0].id;
 
   const handleGenerate = async (e) => {
     e.preventDefault();
