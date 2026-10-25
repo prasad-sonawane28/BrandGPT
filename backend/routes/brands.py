@@ -6,50 +6,42 @@ from models import Brand
 # then "register" them with the main app later.
 brands_bp = Blueprint("brands", __name__)
 
+
 @brands_bp.route("/api/brands", methods=["POST"])
 def create_brand():
-    data = request.get_json()
+    # silent=True returns None on a bad/missing JSON body instead of crashing
+    data = request.get_json(silent=True)
 
-    # Basic validation - name is required
-    if not data.get("name"):
+    # Basic validation - name is required and can't be only spaces
+    if not data or not (data.get("name") or "").strip():
         return jsonify({"error": "Brand name is required"}), 400
 
     new_brand = Brand(
-        name=data.get("name"),
+        name=data.get("name").strip(),
         industry=data.get("industry"),
         description=data.get("description"),
         target_audience=data.get("target_audience"),
         brand_voice=data.get("brand_voice"),
-        products=data.get("products")
+        products=data.get("products"),
     )
 
     db.session.add(new_brand)
     db.session.commit()
 
-    return jsonify({
-        "id": new_brand.id,
-        "name": new_brand.name,
-        "industry": new_brand.industry,
-        "description": new_brand.description,
-        "target_audience": new_brand.target_audience,
-        "brand_voice": new_brand.brand_voice,
-        "products": new_brand.products
-    }), 201
+    return jsonify(new_brand.to_dict()), 201
+
+
+@brands_bp.route("/api/brands", methods=["GET"])
+def list_brands():
+    brands = Brand.query.order_by(Brand.created_at.desc()).all()
+    return jsonify([b.to_dict() for b in brands])
 
 
 @brands_bp.route("/api/brands/<int:brand_id>", methods=["GET"])
 def get_brand(brand_id):
-    brand = Brand.query.get(brand_id)
+    brand = db.session.get(Brand, brand_id)
 
     if not brand:
         return jsonify({"error": "Brand not found"}), 404
 
-    return jsonify({
-        "id": brand.id,
-        "name": brand.name,
-        "industry": brand.industry,
-        "description": brand.description,
-        "target_audience": brand.target_audience,
-        "brand_voice": brand.brand_voice,
-        "products": brand.products
-    })
+    return jsonify(brand.to_dict())
