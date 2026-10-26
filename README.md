@@ -3,6 +3,7 @@
 An AI marketing assistant that learns a company's brand profile and generates on-brand marketing content. Built as a full-stack portfolio project with React and Flask.
 
 ![BrandGPT home screen](docs/screenshot-home.png)
+![BrandGPT work space](docs/Screenshot-workspace.png)
 
 ## Features
 
@@ -10,6 +11,8 @@ An AI marketing assistant that learns a company's brand profile and generates on
 - **Content generation:** pick a brand, describe a task (for example "write an Instagram caption for our new trail running shoe"), and get content written from that brand's profile
 - **Saved history:** every generation is stored per brand, with one-click copy
 - **Mock mode:** the whole app runs without an API key, returning placeholder text that also shows the exact system prompt a real call would send
+- **Active brand switching:** click a brand card to make it the active brand, and the generator follows
+- **Editorial UI:** responsive layout with scroll-reveal sections and one-click starter prompts
 
 ## How it works
 
@@ -73,26 +76,32 @@ Real mode switches on automatically when a key is present. Set `MOCK_AI=1` in th
 
 ## Project structure
 
-```
 BrandGPT/
 ├── backend/
-│   ├── app.py            # app setup, blueprint registration
-│   ├── database.py       # SQLAlchemy instance
-│   ├── models.py         # Brand and Generation models
-│   └── routes/
-│       ├── brands.py     # brand CRUD endpoints
-│       └── generate.py   # prompt building, mock mode, history
+│ ├── app.py # app setup, blueprint registration
+│ ├── database.py # SQLAlchemy instance
+│ ├── models.py # Brand and Generation models
+│ └── routes/
+│ ├── brands.py # brand CRUD endpoints
+│ └── generate.py # prompt building, mock mode, history
 └── frontend/
-    └── src/
-        ├── App.jsx           # top-level state and layout
-        ├── BrandForm.jsx     # create/edit form
-        ├── BrandList.jsx     # brand cards with edit/delete
-        └── GeneratePanel.jsx # generation UI and history
+└── src/
+├── App.jsx # top-level state, page layout, scroll reveal
+├── BrandForm.jsx # create/edit form
+├── BrandList.jsx # brand cards with select, edit and delete
+├── GeneratePanel.jsx # generation UI, starter prompts, history
+├── Profile.jsx # About section (credentials and contact)
+└── index.css # all styling and design tokens
+
 ```
 
 ## Roadmap
 
+## Roadmap
+
+- Free-tier AI providers (Gemini, Groq) behind one provider setting
 - Streaming responses
 - Delete individual generations
 - Database migrations with Flask-Migrate
 - Deployment
+```
