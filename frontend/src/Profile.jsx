@@ -1,9 +1,9 @@
 const PROFILE = {
   name: "Prasad",                                        // EDIT: add your full name
   role: "Full-stack web developer. B.Tech Computer Science student at Parul University, graduating 2027.",
-  email: "your.email@example.com",                       // EDIT
-  github: "https://github.com/your-username",            // EDIT
-  linkedin: "https://www.linkedin.com/in/your-profile",  // EDIT
+  email: "sonawaneprasad441@gmail.com",                       // EDIT
+  github: "https://github.com/prasad-sonawane28",            // EDIT
+  linkedin: "www.linkedin.com/in/prasad-sonawane-7ba2b8247",  // EDIT
   education: "B.Tech, Computer Science Engineering, Parul University (2027)",
   certifications: ["AWS Cloud Foundations", "IBM AI Fundamentals"],
   experience: [
