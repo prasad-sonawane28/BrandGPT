@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from flask import Blueprint, request, jsonify, current_app
-from anthropic import Anthropic
 from database import db
 from models import Brand, Generation
 
@@ -18,7 +17,8 @@ def use_mock():
 
 
 def get_client():
-    # Created per request so a missing key becomes a handled error, not a crash
+    # Imported here so Flask starts fast; the library is only needed for real AI calls
+    from anthropic import Anthropic
     return Anthropic()
 
 

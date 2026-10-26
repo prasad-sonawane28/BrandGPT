@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 
 const API_URL = "http://localhost:5000/api/brands";
 
-const emptyForm = {
-  name: "",
-  industry: "",
-  description: "",
-  target_audience: "",
-  brand_voice: "",
-  products: "",
-};
+const FIELDS = [
+  { name: "name", label: "Brand name", required: true, max: 100, full: true },
+  { name: "industry", label: "Industry", max: 100 },
+  { name: "target_audience", label: "Target audience", max: 200 },
+  { name: "brand_voice", label: "Brand voice", max: 200, full: true, placeholder: "e.g. friendly, witty, professional" },
+  { name: "description", label: "Description", multiline: true, full: true },
+  { name: "products", label: "Products / services", multiline: true, full: true },
+];
+
+const emptyForm = Object.fromEntries(FIELDS.map((f) => [f.name, ""]));
 
 function BrandForm({ onSaved, editingBrand, onCancelEdit }) {
   const [formData, setFormData] = useState(emptyForm);
@@ -18,18 +20,12 @@ function BrandForm({ onSaved, editingBrand, onCancelEdit }) {
 
   const isEditing = Boolean(editingBrand);
 
-  // When the user clicks Edit on a brand, copy its values into the form.
-  // When editing ends, go back to an empty form.
+  // Copy the brand into the form when editing starts; clear it when editing ends
   useEffect(() => {
     if (editingBrand) {
-      setFormData({
-        name: editingBrand.name || "",
-        industry: editingBrand.industry || "",
-        description: editingBrand.description || "",
-        target_audience: editingBrand.target_audience || "",
-        brand_voice: editingBrand.brand_voice || "",
-        products: editingBrand.products || "",
-      });
+      setFormData(
+        Object.fromEntries(FIELDS.map((f) => [f.name, editingBrand[f.name] || ""]))
+      );
     } else {
       setFormData(emptyForm);
     }
@@ -54,17 +50,11 @@ function BrandForm({ onSaved, editingBrand, onCancelEdit }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
-      }
+      if (!response.ok) throw new Error(data.error || "Something went wrong");
 
       setStatus("success");
-      setMessage(
-        `Brand "${formData.name}" ${isEditing ? "updated" : "created"}!`
-      );
+      setMessage(`Saved "${formData.name}".`);
       setFormData(emptyForm);
       if (isEditing && onCancelEdit) onCancelEdit();
       if (onSaved) onSaved();
@@ -75,93 +65,46 @@ function BrandForm({ onSaved, editingBrand, onCancelEdit }) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ textAlign: "left", maxWidth: "480px" }}
-    >
-      <h2>{isEditing ? `Edit ${editingBrand.name}` : "Set up your brand"}</h2>
+    <form className="card" onSubmit={handleSubmit}>
+      <h2>{isEditing ? `Edit ${editingBrand.name}` : "Add a brand"}</h2>
 
-      <label>
-        Brand name *
-        <input
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          maxLength={100}
-          required
-        />
-      </label>
+      <div className="form-grid">
+        {FIELDS.map((f) => (
+          <label key={f.name} className={`field ${f.full ? "full" : ""}`}>
+            <span>{f.label}{f.required && " *"}</span>
+            {f.multiline ? (
+              <textarea
+                name={f.name}
+                value={formData[f.name]}
+                onChange={handleChange}
+                rows={2}
+              />
+            ) : (
+              <input
+                name={f.name}
+                value={formData[f.name]}
+                onChange={handleChange}
+                maxLength={f.max}
+                required={f.required}
+                placeholder={f.placeholder}
+              />
+            )}
+          </label>
+        ))}
+      </div>
 
-      <label>
-        Industry
-        <input
-          name="industry"
-          value={formData.industry}
-          onChange={handleChange}
-          maxLength={100}
-        />
-      </label>
-
-      <label>
-        Description
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows={3}
-        />
-      </label>
-
-      <label>
-        Target audience
-        <input
-          name="target_audience"
-          value={formData.target_audience}
-          onChange={handleChange}
-          maxLength={200}
-        />
-      </label>
-
-      <label>
-        Brand voice
-        <input
-          name="brand_voice"
-          value={formData.brand_voice}
-          onChange={handleChange}
-          maxLength={200}
-          placeholder="e.g. friendly, witty, professional"
-        />
-      </label>
-
-      <label>
-        Products / services
-        <textarea
-          name="products"
-          value={formData.products}
-          onChange={handleChange}
-          rows={3}
-        />
-      </label>
-
-      <button type="submit" disabled={status === "loading"}>
-        {status === "loading"
-          ? "Saving..."
-          : isEditing
-          ? "Save changes"
-          : "Create brand"}
-      </button>
-
-      {isEditing && (
-        <button
-          type="button"
-          onClick={onCancelEdit}
-          style={{ marginLeft: "0.5rem" }}
-        >
-          Cancel
+      <div className="actions">
+        <button type="submit" className="btn btn-primary" disabled={status === "loading"}>
+          {status === "loading" ? "Saving..." : isEditing ? "Save changes" : "Save brand"}
         </button>
-      )}
+        {isEditing && (
+          <button type="button" className="btn btn-ghost" onClick={onCancelEdit}>
+            Cancel
+          </button>
+        )}
+      </div>
 
-      {message && <p className={status}>{message}</p>}
+      {message && <p className={`msg-${status}`}>{message}</p>}
     </form>
   );
 }

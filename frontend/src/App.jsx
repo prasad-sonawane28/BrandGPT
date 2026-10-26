@@ -107,25 +107,29 @@ function App() {
       </header>
 
       <section className="hero" id="top">
-        <div className="wrap">
-          <p className="eyebrow">AI marketing assistant</p>
-          <h1>On-brand copy<br />every time</h1>
-          <p className="lead">
-            Save your brand profile once. BrandGPT writes captions, ads and emails
-            that match your voice, audience and products.
-          </p>
-          <a className="btn btn-primary" href="#workspace">Add your first brand</a>
-          <a className="link" href="#how">See how it works</a>
-        </div>
+        <div className="wrap hero-grid">
+          <div>
+            <p className="eyebrow">AI marketing assistant</p>
+            <h1>On-brand copy<br />every time</h1>
+            <p className="lead">
+              Save your brand profile once. BrandGPT writes captions, ads and emails
+              that match your voice, audience and products.
+            </p>
+            <div className="hero-cta">
+              <a className="btn btn-primary" href="#workspace">Add your first brand</a>
+              <a className="link" href="#how">See how it works</a>
+            </div>
+          </div>
 
-        <div className="hero-art" aria-hidden="true">
-          <svg viewBox="0 0 640 260" preserveAspectRatio="none">
-            <path d="M0 90 C120 40 220 120 340 80 C460 40 560 20 640 0 V260 H0Z" fill="#d3d2e4" />
-            <path d="M0 130 C120 90 230 150 340 120 C450 90 560 70 640 40 V260 H0Z" fill="#98a0dc" />
-            <path d="M0 175 C130 150 240 190 350 160 C460 130 560 110 640 80 V260 H0Z" fill="#1d2fd0" />
-            <path d="M0 175 C130 150 240 190 350 160 C460 130 560 110 640 80" fill="none" stroke="#fff" strokeWidth="2.5" />
-          </svg>
-          <span className="fig">Fig. 01 — Brand voice, applied</span>
+          <figure className="hero-art" aria-hidden="true">
+            <svg viewBox="0 0 640 260" preserveAspectRatio="none">
+              <path d="M0 90 C120 40 220 120 340 80 C460 40 560 20 640 0 V260 H0Z" fill="#d3d2e4" />
+              <path d="M0 130 C120 90 230 150 340 120 C450 90 560 70 640 40 V260 H0Z" fill="#98a0dc" />
+              <path d="M0 175 C130 150 240 190 350 160 C460 130 560 110 640 80 V260 H0Z" fill="#1d2fd0" />
+              <path d="M0 175 C130 150 240 190 350 160 C460 130 560 110 640 80" fill="none" stroke="#fff" strokeWidth="2.5" />
+            </svg>
+            <figcaption>Fig. 01 — Brand voice, applied</figcaption>
+          </figure>
         </div>
       </section>
 
@@ -156,6 +160,9 @@ function App() {
           </div>
           <div className="layout reveal">
             <div className="col">
+              <GeneratePanel brands={brands} activeId={currentId} onSelect={setActiveId} />
+            </div>
+            <div className="col">
               <BrandForm
                 onSaved={loadBrands}
                 editingBrand={editingBrand}
@@ -168,9 +175,6 @@ function App() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
-            </div>
-            <div className="col">
-              <GeneratePanel brands={brands} activeId={currentId} onSelect={setActiveId} />
             </div>
           </div>
         </div>
