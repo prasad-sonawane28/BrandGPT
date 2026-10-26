@@ -5,8 +5,6 @@ An AI marketing assistant that learns a company's brand profile and generates on
 ![BrandGPT home screen](docs/screenshot-home.png)
 ![BrandGPT work space](docs/Screenshot-workspace.png)
 
-## Features
-
 - **Brand profiles:** create, edit and delete brands, each with industry, description, target audience, brand voice and products
 - **Content generation:** pick a brand, describe a task (for example "write an Instagram caption for our new trail running shoe"), and get content written from that brand's profile
 - **Saved history:** every generation is stored per brand, with one-click copy
