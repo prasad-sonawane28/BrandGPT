@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 
-function GeneratePanel({ brands }) {
-  const [brandId, setBrandId] = useState("");
+const QUICK = [
+  { label: "Instagram caption", text: "Write an Instagram caption for our latest product." },
+  { label: "Launch email", text: "Write a short email announcing our new product launch." },
+  { label: "Ad headlines", text: "Write 5 Google ad headlines for our best seller." },
+];
+
+function GeneratePanel({ brands, activeId, onSelect }) {
   const [task, setTask] = useState("");
   const [result, setResult] = useState("");
   const [isMock, setIsMock] = useState(false);
@@ -11,13 +16,8 @@ function GeneratePanel({ brands }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [copiedKey, setCopiedKey] = useState("");
 
-  // Which brand is selected? Fall back to the first one if the chosen one was deleted.
-  const selectedId = brands.some((b) => String(b.id) === String(brandId))
-    ? brandId
-    : brands[0]?.id;
+  const selectedId = activeId;
 
-  // Load the history whenever the selected brand changes,
-  // or when refreshKey changes (we bump it after each new generation).
   useEffect(() => {
     if (!selectedId) return;
 
@@ -27,9 +27,14 @@ function GeneratePanel({ brands }) {
       .catch((err) => console.error("Could not load history:", err));
   }, [selectedId, refreshKey]);
 
-  // Hooks must all run before this early return (see the notes below)
+  // Hooks must all run before this early return
   if (brands.length === 0) {
-    return null; // nothing to generate for yet
+    return (
+      <section className="card">
+        <h2>Generate content</h2>
+        <p className="empty">Add a brand to start generating.</p>
+      </section>
+    );
   }
 
   const selectedBrand = brands.find((b) => String(b.id) === String(selectedId));
@@ -49,17 +54,13 @@ function GeneratePanel({ brands }) {
           body: JSON.stringify({ task }),
         }
       );
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
-      }
+      if (!response.ok) throw new Error(data.error || "Something went wrong");
 
       setResult(data.content);
       setIsMock(Boolean(data.mock));
       setStatus("success");
-      setRefreshKey((k) => k + 1); // triggers the history effect to reload
+      setRefreshKey((k) => k + 1);
     } catch (err) {
       setError(err.message);
       setStatus("error");
@@ -77,13 +78,13 @@ function GeneratePanel({ brands }) {
   };
 
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <form onSubmit={handleGenerate} style={{ textAlign: "left", maxWidth: "480px" }}>
-        <h2>Generate content</h2>
+    <>
+      <form className="card" onSubmit={handleGenerate}>
+        <h2>Write for {selectedBrand?.name}</h2>
 
-        <label>
-          Brand
-          <select value={selectedId} onChange={(e) => setBrandId(e.target.value)}>
+        <label className="field">
+          <span>Brand</span>
+          <select value={selectedId} onChange={(e) => onSelect(Number(e.target.value))}>
             {brands.map((brand) => (
               <option key={brand.id} value={brand.id}>
                 {brand.name}
@@ -92,75 +93,79 @@ function GeneratePanel({ brands }) {
           </select>
         </label>
 
-        <label>
-          What should it write?
+        <label className="field">
+          <span>What should it write?</span>
           <textarea
             value={task}
             onChange={(e) => setTask(e.target.value)}
             rows={3}
-            placeholder="e.g. Write an Instagram caption for our new trail running shoe"
+            placeholder="Describe the content you need, or pick a starter below"
             required
           />
         </label>
 
-        <button type="submit" disabled={status === "loading" || !task.trim()}>
+        <div className="quick">
+          {QUICK.map((q) => (
+            <button key={q.label} type="button" onClick={() => setTask(q.text)}>
+              {q.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={status === "loading" || !task.trim()}
+        >
           {status === "loading" ? "Generating..." : "Generate"}
         </button>
 
-        {status === "error" && <p style={{ color: "red" }}>{error}</p>}
+        {status === "error" && <p className="msg-error">{error}</p>}
 
         {result && (
-          <div style={{ marginTop: "1rem" }}>
+          <div style={{ marginTop: "16px" }}>
             {isMock && (
-              <p style={{ color: "orange", margin: "0 0 0.5rem" }}>
-                Mock mode: no API key set, so this is placeholder text.
+              <p className="notice">
+                Mock mode: no API key is set, so this is placeholder text.
               </p>
             )}
-            <div style={{ whiteSpace: "pre-wrap" }}>{result}</div>
-            <button
-              type="button"
-              onClick={() => handleCopy(result, "result")}
-              style={{ marginTop: "0.5rem" }}
-            >
-              {copiedKey === "result" ? "Copied!" : "Copy"}
-            </button>
+            <div className="output">{result}</div>
+            <div className="actions" style={{ marginTop: "10px" }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => handleCopy(result, "result")}
+              >
+                {copiedKey === "result" ? "Copied" : "Copy"}
+              </button>
+            </div>
           </div>
         )}
       </form>
 
       {history.length > 0 && (
-        <div style={{ marginTop: "2rem", textAlign: "left" }}>
-          <h3>History for {selectedBrand?.name}</h3>
+        <section className="card">
+          <h2>History for {selectedBrand?.name}</h2>
 
           {history.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                border: "1px solid #444",
-                borderRadius: "8px",
-                padding: "1rem",
-                marginBottom: "1rem",
-              }}
-            >
-              <p style={{ margin: "0 0 0.25rem" }}>
-                <strong>{item.task}</strong>
-              </p>
-              <p style={{ margin: "0 0 0.5rem", fontSize: "0.8rem", opacity: 0.7 }}>
-                {new Date(item.created_at).toLocaleString()}
-              </p>
-              <div style={{ whiteSpace: "pre-wrap" }}>{item.content}</div>
-              <button
-                type="button"
-                onClick={() => handleCopy(item.content, item.id)}
-                style={{ marginTop: "0.5rem" }}
-              >
-                {copiedKey === item.id ? "Copied!" : "Copy"}
-              </button>
-            </div>
+            <article key={item.id} className="history-item">
+              <p className="task">{item.task}</p>
+              <p className="meta">{new Date(item.created_at).toLocaleString()}</p>
+              <div className="output">{item.content}</div>
+              <div className="actions" style={{ marginTop: "10px" }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => handleCopy(item.content, item.id)}
+                >
+                  {copiedKey === item.id ? "Copied" : "Copy"}
+                </button>
+              </div>
+            </article>
           ))}
-        </div>
+        </section>
       )}
-    </div>
+    </>
   );
 }
 

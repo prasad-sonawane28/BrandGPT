@@ -1,6 +1,7 @@
 import BrandForm from "./BrandForm";
 import BrandList from "./BrandList";
 import GeneratePanel from "./GeneratePanel";
+import Profile from "./Profile";
 import { useState, useEffect } from 'react'
 import './App.css'
 
@@ -14,8 +15,14 @@ function App() {
   const [backendStatus, setBackendStatus] = useState('Checking...')
   const [brands, setBrands] = useState([])
   const [editingBrand, setEditingBrand] = useState(null)
+  const [activeId, setActiveId] = useState(null)
 
   const isOnline = backendStatus === 'BrandGPT backend is running'
+
+  // The active brand: the one the user picked, or the first if none (or it was deleted)
+  const currentId = brands.some((b) => String(b.id) === String(activeId))
+    ? activeId
+    : brands[0]?.id
 
   const loadBrands = async () => {
     try {
@@ -62,6 +69,24 @@ function App() {
     loadBrands()
   }, [])
 
+  // Scroll reveal: fade sections in the first time they enter the viewport
+  useEffect(() => {
+    document.documentElement.classList.add('reveal-ready')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12 }
+    )
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <>
       <header className="nav">
@@ -70,6 +95,7 @@ function App() {
           <nav className="nav-links">
             <a href="#how">How it works</a>
             <a href="#workspace">Workspace</a>
+            <a href="#about">About</a>
           </nav>
           <div className="nav-end">
             <span className={`status ${isOnline ? 'ok' : ''}`}>
@@ -105,13 +131,13 @@ function App() {
 
       <section className="section" id="how">
         <div className="wrap">
-          <div className="section-head">
+          <div className="section-head reveal">
             <p className="eyebrow">How it works</p>
             <h2 className="title">Three steps to<br />on-brand copy</h2>
           </div>
           <div className="steps">
             {STEPS.map((step) => (
-              <div key={step.num} className="step">
+              <div key={step.num} className="step reveal">
                 <div className="shape" />
                 <p className="num">{step.num}</p>
                 <h3>{step.title}</h3>
@@ -124,23 +150,35 @@ function App() {
 
       <section className="section" id="workspace">
         <div className="wrap">
-          <div className="section-head">
+          <div className="section-head reveal">
             <p className="eyebrow">Workspace</p>
             <h2 className="title">Your brands<br />and content</h2>
           </div>
-          <div className="layout">
+          <div className="layout reveal">
             <div className="col">
               <BrandForm
                 onSaved={loadBrands}
                 editingBrand={editingBrand}
                 onCancelEdit={() => setEditingBrand(null)}
               />
-              <BrandList brands={brands} onEdit={handleEdit} onDelete={handleDelete} />
+              <BrandList
+                brands={brands}
+                activeId={currentId}
+                onSelect={setActiveId}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             </div>
             <div className="col">
-              <GeneratePanel brands={brands} />
+              <GeneratePanel brands={brands} activeId={currentId} onSelect={setActiveId} />
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="section" id="about">
+        <div className="wrap">
+          <Profile />
         </div>
       </section>
 
